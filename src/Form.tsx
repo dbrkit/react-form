@@ -18,7 +18,10 @@ export type FormContainerProps<T extends FieldValues> = UseFormProps<T> & {
   children:
     | React.ReactNode
     | ((
-        props: UseFormReturn<T, object> & { submitHandler: any }
+        props: UseFormReturn<T, object> & {
+          submitHandler: (values: T) => void;
+          submit: () => void;
+        }
       ) => React.ReactNode);
   onSubmit: (data: T, props?: any) => unknown | Promise<unknown>;
   initialValues?: UseFormProps<T>["defaultValues"];
@@ -48,10 +51,14 @@ export default function Form<TFieldValues extends FieldValues = FieldValues>({
     );
   };
 
+  const submit = form.handleSubmit(submitHandler);
+
   return (
     <FormProvider {...form}>
       <ValidationSchemaProvider schema={validationSchema}>
-        {isFunction(children) ? children({ submitHandler, ...form }) : children}
+        {isFunction(children)
+          ? children({ ...form, submitHandler, submit })
+          : children}
       </ValidationSchemaProvider>
     </FormProvider>
   );
